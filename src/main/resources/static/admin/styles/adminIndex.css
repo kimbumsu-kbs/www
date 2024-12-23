@@ -40,18 +40,28 @@
   padding: 0.625rem;
   text-align: center;
 }
-#main > .content[rel=index] > .grid-container > .gird > table > tbody > .user {
+#main > .content[rel=index] > .grid-container > .gird > table > tbody > .main {
   cursor: pointer;
 }
-#main > .content[rel=index] > .grid-container > .gird > table > tbody > .user > td {
+#main > .content[rel=index] > .grid-container > .gird > table > tbody > .main > td {
   text-align: center;
   border-bottom: 1px solid #a6a6a6;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-#main > .content[rel=index] > .grid-container > .gird > table > tbody > .user > td:first-of-type {
+#main > .content[rel=index] > .grid-container > .gird > table > tbody > .main > td:first-of-type {
   padding-left: 0.625rem;
+}
+#main > .content[rel=index] > .grid-container > .gird > table > tbody > .board > td:first-of-type {
+  padding-left: 0;
+}
+#main > .content[rel=index] > .grid-container > .gird > .page {
+  text-align: center;
+  padding: 0.25rem;
+}
+#main > .content[rel=index] > .grid-container > .gird > .page > a {
+  padding: 0.625rem;
 }
 #main > .content[rel=index] > .Modal-container {
   position: relative;

@@ -9,6 +9,7 @@ import com.kbs.www.mappers.ReportsMapper;
 import com.kbs.www.mappers.UserMapper;
 import com.kbs.www.mappers.WriteMapper;
 import com.kbs.www.vos.BoardPostPageVo;
+import com.kbs.www.vos.IndexPageVo;
 import com.kbs.www.vos.ReportsPageVo;
 import com.kbs.www.vos.UserPageVo;
 import org.apache.commons.lang3.tuple.Pair;
@@ -34,8 +35,33 @@ public class AdminPageService {
         this.reportsMapper = reportsMapper;
     }
 
-    public UserEntity[] getUsers() {
-        return this.userMapper.selectAllUser();
+    public Pair<IndexPageVo, UserEntity[]> selectIndexUser(int page) {
+        page = Math.max(page, 1);
+        int totalCount = this.userMapper.selectUserCount();
+        IndexPageVo index = new IndexPageVo(page, totalCount);
+        UserEntity[] user = this.userMapper.selectUserPage(index.countPerPage, index.offsetCount);
+        return Pair.of(index, user);
+    }
+
+    public Pair<IndexPageVo, BoardPostsEntity[]> selectIndexBoard(int page) {
+        page = Math.max(page, 1);
+        int totalCount = this.boardPostsMapper.selectBoardPostCount();
+        IndexPageVo index = new IndexPageVo(page, totalCount);
+        BoardPostsEntity[] boardPosts = this.boardPostsMapper.selectBoardPost(index.countPerPage, index.offsetCount);
+
+        for (BoardPostsEntity boardPost : boardPosts) {
+            UserEntity user = this.findUserByEmail(boardPost.getUserEmail());
+            boardPost.setUser(user);
+        }
+        return Pair.of(index, boardPosts);
+    }
+
+    public Pair<IndexPageVo, ReportsEntity[]> selectIndexReport(int page) {
+        page = Math.max(page, 1);
+        int totalCount = this.reportsMapper.selectReportsCount();
+        IndexPageVo index = new IndexPageVo(page, totalCount);
+        ReportsEntity[] reports = this.reportsMapper.selectReports(index.countPerPage, index.offsetCount);
+        return Pair.of(index, reports);
     }
 
     public Boolean write(WriteEntity adminPage, MultipartFile coverFile) {
@@ -59,13 +85,6 @@ public class AdminPageService {
             e.printStackTrace();
             return false;
         }
-    }
-
-    public UserEntity[] read(UserEntity user) {
-        if (user == null) {
-            return null;
-        }
-        return this.userMapper.selectAllUser();
     }
 
     public boolean updateDeleted(String userEmail) {
@@ -117,6 +136,10 @@ public class AdminPageService {
         UserPageVo userPageVo = new UserPageVo(page, totalCount);
         UserEntity[] user = this.userMapper.selectUserBySearch(filter, keyword, userPageVo.countPerPage, userPageVo.offsetCount);
         return Pair.of(userPageVo, user);
+    }
+
+    public BoardPostsEntity[] selectBoardPosts() {
+        return this.boardPostsMapper.selectBoardPosts();
     }
 
     public Pair<BoardPostPageVo, BoardPostsEntity[]> selectBoardPost(int page) {

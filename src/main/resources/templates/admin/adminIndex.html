@@ -33,7 +33,7 @@
                     </tr>
                     </thead>
                     <tbody class="tbody">
-                    <tr th:each="user : ${user}" class="user"
+                    <tr th:each="user : ${user}" class="main"
                         th:attr="
                         data-email=${user.getEmail()},
                         data-nickname=${user.getNickName()},
@@ -49,10 +49,81 @@
                     </tr>
                     </tbody>
                 </table>
+                <div class="page">
+                    <a th:if="${userPage.requestPage > userPage.movableMinPage}"
+                       th:href="@{'/admin/' (userPage=${userPage.requestPage - 1}, boardPage=${boardPage.requestPage}, reportsPage=${reportsPage.requestPage})}"><i class="fa-solid fa-angle-left"></i></a>
+                    <a th:if="${userPage.requestPage < userPage.movableMaxPage}"
+                       th:href="@{'/admin/' (userPage=${userPage.requestPage + 1}, boardPage=${boardPage.requestPage}, reportsPage=${reportsPage.requestPage})}"><i class="fa-solid fa-angle-right"></i></a>
+                </div>
+            </div>
+            <div class="gird">
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th>번호</th>
+                        <th>제목</th>
+                        <th>작성자</th>
+                    </tr>
+                    </thead>
+                    <tbody class="tbody">
+                    <tr th:each="board : ${board}" class="main board"
+                        th:attr="
+                        data-index=${board.getIndex()},
+                        data-title=${board.getTitle()},
+                        data-content=${board.getContent()},
+                        data-useremail=${board.getUserEmail()},
+                        data-usernickname=${board.getUserNickName()},
+                        data-createat=${#temporals.format(board.getCreatedAt(), 'yyyy-MM-dd HH:mm:ss')},
+                        data-view=${board.getView()}">
+                        <td th:text="${board.getIndex()}"></td>
+                        <td th:text="${board.getTitle()}"></td>
+                        <td th:text="${board.getUserNickName()}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+                <div class="page">
+                    <a th:if="${boardPage.requestPage > boardPage.movableMinPage}"
+                       th:href="@{'/admin/' (boardPage=${boardPage.requestPage - 1}, userPage=${userPage.requestPage}, reportsPage=${reportsPage.requestPage})}"><i class="fa-solid fa-angle-left"></i></a>
+                    <a th:if="${boardPage.requestPage < boardPage.movableMaxPage}"
+                       th:href="@{'/admin/' (boardPage=${boardPage.requestPage + 1}, userPage=${userPage.requestPage}, reportsPage=${reportsPage.requestPage})}"><i class="fa-solid fa-angle-right"></i></a>
+                </div>
             </div>
             <div class="gird"></div>
-            <div class="gird"></div>
-            <div class="gird"></div>
+            <div class="gird">
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th>번호</th>
+                        <th>신고이유</th>
+                        <th>상태</th>
+                    </tr>
+                    </thead>
+                    <tbody class="tbody">
+                    <tr th:each="reports : ${reports}" class="main board"
+                        th:attr="
+                        data-index=${reports.getIndex()},
+                        data-useremail=${reports.getUserEmail()},
+                        data-reporteduseremail=${reports.getReportUserEmail()},
+                        data-reportedpostid=${reports.getReportedPostId() == null ? '없음' : reports.getReportedPostId()},
+                        data-reportedcommentid=${reports.getReportedCommentId() == null ? '없음' : reports.getReportedCommentId()},
+                        data-status=${reports.getStatus()},
+                        data-currentstatus=${reports.getCurrentStatus()},
+                        data-reason=${reports.getReason()},
+                        data-reasondetail=${reports.getReasonDetail() == null ? '없음' : reports.getReasonDetail()},
+                        data-reportedat=${reports.getReportedAt()}">
+                        <td th:text="${reports.getIndex()}"></td>
+                        <td th:text="${reports.getReason()}"></td>
+                        <td th:text="${reports.getStatus()}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+                <div class="page">
+                    <a th:if="${reportsPage.requestPage > reportsPage.movableMinPage}"
+                       th:href="@{'/admin/' (reportPage=${reportsPage.requestPage - 1}, boardPage=${boardPage.requestPage}, userPage=${userPage.requestPage})}"><i class="fa-solid fa-angle-left"></i></a>
+                    <a th:if="${reportsPage.requestPage < reportsPage.movableMaxPage}"
+                       th:href="@{'/admin/' (reportPage=${reportsPage.requestPage + 1}, boardPage=${boardPage.requestPage}, userPage=${userPage.requestPage})}"><i class="fa-solid fa-angle-right"></i></a>
+                </div>
+            </div>
         </div>
         <div class="Modal-container">
             <div class="Modal">
@@ -64,6 +135,27 @@
                     <span id="modalIsAdmin"></span>
                     <span id="modalVerified"></span>
                     <span id="modalWarning"></span>
+                </div>
+                <div class="Modal-body">
+                    <span id="modalIndex"></span>
+                    <span id="modalTitle"></span>
+                    <span id="modalContent"></span>
+                    <span id="modalUserEmail"></span>
+                    <span id="modalUserNickName"></span>
+                    <span id="modalCreateAt2"></span>
+                    <span id="modalView"></span>
+                </div>
+                <div class="Modal-body">
+                    <span id="modalIndex2"></span>
+                    <span id="modalUserEmail2"></span>
+                    <span id="modalReportedUserEmail"></span>
+                    <span id="modalReportedPostId"></span>
+                    <span id="modalReportedCommentId"></span>
+                    <span id="modalStatus"></span>
+                    <span id="modalCurrentStatus"></span>
+                    <span id="modalReason"></span>
+                    <span id="modalReasonDetail"></span>
+                    <span id="modalReportedAt"></span>
                 </div>
             </div>
         </div>

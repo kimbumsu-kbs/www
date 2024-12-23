@@ -23,7 +23,7 @@
                 <td>신고자</td>
                 <td>피신고자</td>
                 <td>신고이유</td>
-                <td colspan="3">신고내용</td>
+                <td>신고내용</td>
                 <td>신고유형</td>
                 <td>상태</td>
                 <td>신고날짜</td>
@@ -39,7 +39,7 @@
                 <td th:text="${reports.getUserEmail()}"></td>
                 <td th:text="${reports.getReportUserEmail()}"></td>
                 <td th:text="${reports.getReason()}"></td>
-                <td th:text="${reports.getReasonDetail()}" colspan="3"></td>
+                <td th:text="${reports.getReasonDetail()}"></td>
                 <td th:text="${reports.getStatus()}">/td>
                 <td th:text="${reports.getCurrentStatus()}"></td>
                 <td th:text="${#temporals.format(reports.getReportedAt(), 'yyyy-MM-dd')}">2024-01-01</td>

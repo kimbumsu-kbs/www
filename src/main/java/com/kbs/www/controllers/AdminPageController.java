@@ -6,6 +6,7 @@ import com.kbs.www.entities.ReportsEntity;
 import com.kbs.www.entities.UserEntity;
 import com.kbs.www.services.AdminPageService;
 import com.kbs.www.vos.BoardPostPageVo;
+import com.kbs.www.vos.IndexPageVo;
 import com.kbs.www.vos.ReportsPageVo;
 import com.kbs.www.vos.UserPageVo;
 import org.apache.commons.lang3.tuple.Pair;
@@ -36,10 +37,19 @@ public class AdminPageController {
     }
 
     @RequestMapping(value = "/", method = RequestMethod.GET, produces = MediaType.TEXT_HTML_VALUE)
-    public ModelAndView getIndex() {
-        UserEntity[] user = this.adminPageService.getUsers();
+    public ModelAndView getIndex(@RequestParam(value = "userPage", required = false, defaultValue = "1") int userPage,
+                                 @RequestParam(value = "boardPage", required = false, defaultValue = "1") int boardPage,
+                                 @RequestParam(value = "reportPage", required = false, defaultValue = "1") int reportPage) {
+        Pair<IndexPageVo, UserEntity[]> user = this.adminPageService.selectIndexUser(userPage);
+        Pair<IndexPageVo, BoardPostsEntity[]> board = this.adminPageService.selectIndexBoard(boardPage);
+        Pair<IndexPageVo, ReportsEntity[]> reports = this.adminPageService.selectIndexReport(reportPage);
         ModelAndView modelAndView = new ModelAndView();
-        modelAndView.addObject("user", user);
+        modelAndView.addObject("userPage", user.getLeft());
+        modelAndView.addObject("user", user.getRight());
+        modelAndView.addObject("boardPage", board.getLeft());
+        modelAndView.addObject("board", board.getRight());
+        modelAndView.addObject("reportsPage", reports.getLeft());
+        modelAndView.addObject("reports", reports.getRight());
         modelAndView.setViewName("admin/adminIndex");
         return modelAndView;
     }

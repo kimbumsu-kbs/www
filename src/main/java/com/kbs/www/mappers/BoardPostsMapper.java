@@ -6,6 +6,9 @@ import org.apache.ibatis.annotations.Param;
 
 @Mapper
 public interface BoardPostsMapper {
+
+    BoardPostsEntity[] selectBoardPosts();
+
     int selectBoardPostCount();
 
     BoardPostsEntity[] selectBoardPost(@Param(value = "limitCount") int limitCount,
