@@ -1,6 +1,6 @@
 package com.kbs.www.services;
 
-import com.kbs.www.entities.WriteEntity;
+import com.kbs.www.entities.FaveInfoEntity;
 import com.kbs.www.entities.BoardPostsEntity;
 import com.kbs.www.entities.ReportsEntity;
 import com.kbs.www.entities.UserEntity;
@@ -64,7 +64,7 @@ public class AdminPageService {
         return Pair.of(index, reports);
     }
 
-    public Boolean write(WriteEntity adminPage, MultipartFile coverFile) {
+    public Boolean write(FaveInfoEntity adminPage, MultipartFile coverFile) {
         if (adminPage == null || adminPage.getTitle() == null || adminPage.getTitle().length() < 2 || adminPage.getTitle().length() > 20 ||
                 adminPage.getLocation() == null || adminPage.getStartDate() == null || adminPage.getEndDate() == null || adminPage.getDescription() == null || adminPage.getDescription().isEmpty() || adminPage.getDescription().length() > 10000) {
             return false;
