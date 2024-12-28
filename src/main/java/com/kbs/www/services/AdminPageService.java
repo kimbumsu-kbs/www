@@ -4,10 +4,7 @@ import com.kbs.www.entities.FaveInfoEntity;
 import com.kbs.www.entities.BoardPostsEntity;
 import com.kbs.www.entities.ReportsEntity;
 import com.kbs.www.entities.UserEntity;
-import com.kbs.www.mappers.BoardPostsMapper;
-import com.kbs.www.mappers.ReportsMapper;
-import com.kbs.www.mappers.UserMapper;
-import com.kbs.www.mappers.WriteMapper;
+import com.kbs.www.mappers.*;
 import com.kbs.www.vos.BoardPostPageVo;
 import com.kbs.www.vos.IndexPageVo;
 import com.kbs.www.vos.ReportsPageVo;
@@ -15,10 +12,13 @@ import com.kbs.www.vos.UserPageVo;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 public class AdminPageService {
@@ -26,13 +26,15 @@ public class AdminPageService {
     private final BoardPostsMapper boardPostsMapper;
     private final UserMapper userMapper;
     private final ReportsMapper reportsMapper;
+    private final FaveInfoMapper faveInfoMapper;
 
     @Autowired
-    public AdminPageService(WriteMapper writeMapper, BoardPostsMapper boardPostsMapper, UserMapper userMapper, ReportsMapper reportsMapper) {
+    public AdminPageService(WriteMapper writeMapper, BoardPostsMapper boardPostsMapper, UserMapper userMapper, ReportsMapper reportsMapper, FaveInfoMapper faveInfoMapper) {
         this.writeMapper = writeMapper;
         this.boardPostsMapper = boardPostsMapper;
         this.userMapper = userMapper;
         this.reportsMapper = reportsMapper;
+        this.faveInfoMapper = faveInfoMapper;
     }
 
     public Pair<IndexPageVo, UserEntity[]> selectIndexUser(int page) {
@@ -87,8 +89,46 @@ public class AdminPageService {
         }
     }
 
+    @Transactional
+    public Boolean modify(FaveInfoEntity adminPage, MultipartFile coverFile, Boolean deleteCover) {
+        if (adminPage == null) {
+            return false;
+        }
+
+        FaveInfoEntity dbFaveInfo = this.faveInfoMapper.selectFaveInfoById(adminPage.getIndex());
+        if (dbFaveInfo == null) {
+            return false;
+        }
+
+        dbFaveInfo.setTitle(adminPage.getTitle());
+        dbFaveInfo.setDescription(adminPage.getDescription());
+        dbFaveInfo.setStartDate(adminPage.getStartDate());
+        dbFaveInfo.setEndDate(adminPage.getEndDate());
+        dbFaveInfo.setLocation(adminPage.getLocation());
+        dbFaveInfo.setUpdatedAt(LocalDateTime.now());
+
+        try {
+            if (Boolean.TRUE.equals(deleteCover)) {
+                // 이미지 삭제 플래그가 설정된 경우
+                dbFaveInfo.setCoverData(null);
+                dbFaveInfo.setCoverContentType(null);
+            } else if (coverFile != null && !coverFile.isEmpty()) {
+                // 새로운 이미지가 업로드된 경우
+                dbFaveInfo.setCoverData(coverFile.getBytes());
+                dbFaveInfo.setCoverContentType(coverFile.getContentType());
+            }
+            // 이미지 유지 시 아무 작업도 하지 않음
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+
+        return this.faveInfoMapper.updateFaveInfo(dbFaveInfo) > 0;
+    }
+
+
     public boolean updateDeleted(String userEmail) {
-        UserEntity user = this.userMapper.selectUserByEmail(userEmail);
+        UserEntity user = this.userMapper.selectUserByEmailAdmin(userEmail);
         if (user == null) {
             return false;
         }
@@ -98,7 +138,7 @@ public class AdminPageService {
     }
 
     public boolean updateWarning(String userEmail, int warning) {
-        UserEntity user = this.userMapper.selectUserByEmail(userEmail);
+        UserEntity user = this.userMapper.selectUserByEmailAdmin(userEmail);
         if (user == null) {
             return false;
         }
@@ -138,10 +178,6 @@ public class AdminPageService {
         return Pair.of(userPageVo, user);
     }
 
-    public BoardPostsEntity[] selectBoardPosts() {
-        return this.boardPostsMapper.selectBoardPosts();
-    }
-
     public Pair<BoardPostPageVo, BoardPostsEntity[]> selectBoardPost(int page) {
         page = Math.max(page, 1);
         int totalCount = this.boardPostsMapper.selectBoardPostCount();
@@ -178,7 +214,8 @@ public class AdminPageService {
         if (userEmail == null || userEmail.isEmpty()) {
             return null;
         }
-        return this.userMapper.selectUserByEmail(userEmail);
+        return this.userMapper.selectUserByEmailAdmin(userEmail);
+
     }
 
     public boolean deleteBoardPost(int index) {
@@ -211,4 +248,35 @@ public class AdminPageService {
         reports.setCurrentStatus("신고 처리 완료");
         return this.reportsMapper.updateReport(reports) > 0;
     }
+
+    public Pair<UserPageVo, FaveInfoEntity[]> selectFaveInfo(int page) {
+        page = Math.max(page, 1);
+        int totalCount = this.faveInfoMapper.selectFaveInfoCount();
+        UserPageVo userPageVo = new UserPageVo(page, totalCount);
+        FaveInfoEntity[] fave = this.faveInfoMapper.selectFaveInfo(userPageVo.countPerPage, userPageVo.offsetCount);
+        return Pair.of(userPageVo, fave);
+    }
+
+    public Map<String, String> splitAddress(String fullAddress) {
+        Map<String, String> addressParts = new HashMap<>();
+
+        String extraAddress = "";
+        if (fullAddress.contains("(") && fullAddress.contains(")")) {
+            int startIdx = fullAddress.indexOf("(");
+            int endIdx = fullAddress.indexOf(")");
+            extraAddress = fullAddress.substring(startIdx, endIdx + 1);
+            fullAddress = fullAddress.substring(0, startIdx).trim();
+        }
+
+        int lastSpaceIdx = fullAddress.lastIndexOf(" ");
+        String mainAddress = fullAddress.substring(0, lastSpaceIdx).trim();
+        String detailAddress = fullAddress.substring(lastSpaceIdx + 1).trim();
+
+        addressParts.put("mainAddress", mainAddress);
+        addressParts.put("detailAddress", detailAddress);
+        addressParts.put("extraAddress", extraAddress);
+
+        return addressParts;
+    }
+
 }

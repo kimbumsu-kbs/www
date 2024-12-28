@@ -24,7 +24,7 @@
     </select>
     <!-- userEmail 이 동일한 데이터 불러오기 -->
     <!-- 경고 횟수 , 탈퇴 처리 업데이트 랑 연결-->
-    <select id="selectUserByEmail" resultType="com.kbs.www.entities.UserEntity">
+    <select id="selectUserByEmailAdmin" resultType="com.kbs.www.entities.UserEntity">
         SELECT `email`        AS `email`,
                `password`     AS `password`,
                `nickname`     AS `nickName`,

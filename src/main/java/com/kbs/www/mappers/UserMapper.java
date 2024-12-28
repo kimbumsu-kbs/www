@@ -8,7 +8,7 @@ import org.apache.ibatis.annotations.Param;
 public interface UserMapper {
     UserEntity[] selectAllUser();
 
-    UserEntity selectUserByEmail(@Param("userEmail") String userEmail);
+    UserEntity selectUserByEmailAdmin(@Param("userEmail") String userEmail);
 
     int updateWarning(UserEntity user);
 

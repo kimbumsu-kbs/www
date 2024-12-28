@@ -1,10 +1,12 @@
 package com.kbs.www.controllers;
 
+import ch.qos.logback.core.model.Model;
 import com.kbs.www.entities.FaveInfoEntity;
 import com.kbs.www.entities.BoardPostsEntity;
 import com.kbs.www.entities.ReportsEntity;
 import com.kbs.www.entities.UserEntity;
 import com.kbs.www.services.AdminPageService;
+import com.kbs.www.services.FaveService;
 import com.kbs.www.vos.BoardPostPageVo;
 import com.kbs.www.vos.IndexPageVo;
 import com.kbs.www.vos.ReportsPageVo;
@@ -21,8 +23,8 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,10 +33,12 @@ import java.util.Map;
 public class AdminPageController {
 
     private final AdminPageService adminPageService;
+    private final FaveService faveService;
 
     @Autowired
-    public AdminPageController(AdminPageService adminPageService) {
+    public AdminPageController(AdminPageService adminPageService, FaveService faveService) {
         this.adminPageService = adminPageService;
+        this.faveService = faveService;
     }
 
     @RequestMapping(value = "/", method = RequestMethod.GET, produces = MediaType.TEXT_HTML_VALUE)
@@ -94,6 +98,55 @@ public class AdminPageController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
     }
+
+    @RequestMapping(value = "modify/", method = RequestMethod.GET, produces = MediaType.TEXT_HTML_VALUE)
+    public ModelAndView getModify(@RequestParam(value = "index", required = false) int index) {
+        ModelAndView modelAndView = new ModelAndView();
+        FaveInfoEntity fave = this.faveService.selectFaveInfoById(index);
+        Map<String, String> addressParts = this.adminPageService.splitAddress(fave.getLocation());
+        modelAndView.addObject("mainAddress", addressParts.get("mainAddress"));
+        modelAndView.addObject("detailAddress", addressParts.get("detailAddress"));
+        modelAndView.addObject("extraAddress", addressParts.get("extraAddress"));
+        modelAndView.addObject("fave", fave);
+        modelAndView.setViewName("admin/adminModify");
+        return modelAndView;
+    }
+
+    @RequestMapping(value = "modify/", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public ResponseEntity<?> postModify(
+            @RequestParam("index") Integer index,
+            @RequestParam("title") String title,
+            @RequestParam("location") String location,
+            @RequestParam("startDate") String startDate,
+            @RequestParam("endDate") String endDate,
+            @RequestParam("description") String description,
+            @RequestParam(value = "coverData", required = false) MultipartFile coverFile,
+            @RequestParam(value = "deleteCover", required = false) Boolean deleteCover) {
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDate startDateTime = LocalDate.parse(startDate, formatter);
+        LocalDate endDateTime = LocalDate.parse(endDate, formatter);
+
+        FaveInfoEntity adminPage = new FaveInfoEntity();
+        adminPage.setIndex(index);
+        adminPage.setTitle(title);
+        adminPage.setLocation(location);
+        adminPage.setStartDate(startDateTime);
+        adminPage.setEndDate(endDateTime);
+        adminPage.setDescription(description);
+
+        Boolean result = this.adminPageService.modify(adminPage, coverFile, deleteCover);
+        Map<String, String> response = new HashMap<>();
+        response.put("result", result.toString());
+
+        if (result) {
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+    }
+
 
     @RequestMapping(value = "user/", method = RequestMethod.GET, produces = MediaType.TEXT_HTML_VALUE)
     public ModelAndView getUser(@RequestParam(value = "page", required = false, defaultValue = "1") int page,
@@ -179,9 +232,12 @@ public class AdminPageController {
         return response.toString();
     }
 
-    @RequestMapping(value = "festival/" ,method = RequestMethod.GET, produces = MediaType.TEXT_HTML_VALUE)
-    public ModelAndView getFestival() {
+    @RequestMapping(value = "festival/", method = RequestMethod.GET, produces = MediaType.TEXT_HTML_VALUE)
+    public ModelAndView getFestival(@RequestParam(value = "page", required = false, defaultValue = "1") int page) {
         ModelAndView modelAndView = new ModelAndView();
+        Pair<UserPageVo, FaveInfoEntity[]> pair = this.adminPageService.selectFaveInfo(page);
+        modelAndView.addObject("page", pair.getLeft());
+        modelAndView.addObject("fave", pair.getRight());
         modelAndView.setViewName("admin/adminFave");
         return modelAndView;
     }
